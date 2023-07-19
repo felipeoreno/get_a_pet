@@ -105,4 +105,21 @@ module.exports = class UserController {
 
         res.status(200).send(currentUser)
     }
+
+    static async getUserById(req, res){
+        const id = req.params.id
+    
+        const user = await User.findByPk(id, {
+            where: { id: id }
+        })
+
+        if(!user){
+            res.status(422).json({ message: 'Usuário não encontrado' })
+            return
+        }
+
+        user.password = undefined
+
+        res.status(200).json({ user })
+    }
 }
