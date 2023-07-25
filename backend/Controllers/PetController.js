@@ -60,4 +60,17 @@ module.exports = class PetController{
         const pets = await Pet.findAll({ order: [['createdAt', 'DESC']] })
         res.status(200).json({ pets: pets })
     }
+
+    static async getAllUserPets(req, res){
+        let currentUser //variável do tipo let pois ele permite deixar o objeto vazio
+        const token = getToken(req)
+        const decoded = jwt.verify(token, 'nossosecret')
+        currentUser = await User.findByPk(decoded.id)
+        currentUser.password = undefined
+        const currentUserId = currentUser.id //pegamos o ID do user logado
+
+        const pets = await Pet.findAll({ where: { UserId: currentUserId }, order: [['createdAt', 'DESC']] })
+
+        res.status(200).json({ pets })
+    }
 }
