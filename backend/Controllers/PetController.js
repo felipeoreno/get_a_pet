@@ -62,6 +62,7 @@ module.exports = class PetController{
     }
 
     static async getAllUserPets(req, res){
+        //verifica o usuário logado
         let currentUser //variável do tipo let pois ele permite deixar o objeto vazio
         const token = getToken(req)
         const decoded = jwt.verify(token, 'nossosecret')
@@ -72,5 +73,60 @@ module.exports = class PetController{
         const pets = await Pet.findAll({ where: { UserId: currentUserId }, order: [['createdAt', 'DESC']] })
 
         res.status(200).json({ pets })
+    }
+
+    static async getPetById(req, res){
+        const id = req.params.id //buscar id da url
+
+        // verifica se o id inserido na URL é um número
+        if(isNaN(id)){ // Nan = Not a Number
+            res.status(422).json({message: 'ID inválido'})
+            return
+        }
+
+        const pet = await Pet.findByPk(id)
+
+        if(!pet){
+            res.status(422).json({ message: 'Pet não existe' })
+            return
+        }
+
+        res.status(200).json({ pet: pet })
+    }
+
+    static async removePetById(req, res){
+        const id = req.params.id //buscar id da url
+
+        // verifica se o id inserido na URL é um número
+        if(isNaN(id)){ // Nan = Not a Number
+            res.status(422).json({message: 'ID inválido'})
+            return
+        }
+
+        const pet = await Pet.findByPk(id)
+
+        if(!pet){
+            res.status(422).json({ message: 'Pet não existe' })
+            return
+        }
+
+        //verifica o usuário logado
+        let currentUser //variável do tipo let pois ele permite deixar o objeto vazio
+        const token = getToken(req)
+        const decoded = jwt.verify(token, 'nossosecret')
+        currentUser = await User.findByPk(decoded.id)
+        currentUser.password = undefined
+        const currentUserId = currentUser.id //pegamos o ID do user logado
+
+        if(Number(pet.UserId) !== Number(currentUserId)){
+            console.log('pet.UserId: ', pet.UserId)
+            console.log('currentUserId: ', currentUserId)
+            res.status(422).json({ message: 'Id inválido'})
+            return
+        }
+        const petName = pet.name
+
+        await Pet.destroy({ where: { id: id } })
+        res.status(200).json({ message: `${petName} removido` })
     }
 }
