@@ -9,6 +9,7 @@ const imageUpload = require('../helpers/image-upload')
 router.post('/create', verifyToken, imageUpload.array('images'), PetController.create) //cadastrar um pet
 router.get('/mypets', verifyToken, PetController.getAllUserPets) //mostrar pets do usuário logado
 router.delete('/delete/:id', verifyToken, PetController.removePetById) //remover um pet
+router.patch('/:id', verifyToken, imageUpload.array('images'), PetController.updatePet) //editar um pet pelo id
 
 //rotas públicas
 router.get('/', PetController.getAll)

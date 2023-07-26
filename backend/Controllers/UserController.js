@@ -128,6 +128,9 @@ module.exports = class UserController {
 
     static async editUser(req, res){
         const id = req.params.id
+
+        //checar se o usuário existe
+        const token = getToken(req)
         const user = await getUserById(token)
 
         //receber os dados do usuário nas variáveis
