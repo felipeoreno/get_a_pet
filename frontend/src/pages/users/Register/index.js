@@ -62,7 +62,7 @@ function Register() {
             name='confirmpassword'
             handleChange={handleChange}
           />
-          <button class='btn btn-primary' type='submit'>Registrar</button>
+          <button className='btn btn-primary' type='submit'>Registrar</button>
         </form>
       </div>
     </div>

@@ -20,7 +20,8 @@ function Profile() {
         }
       })
         .then((response) => {
-          setUser(response, data)
+          // alert('response.data: ' + JSON.stringify(response.data))
+          setUser(response.data)
         })
     }
   }, [token, navigate])
@@ -45,24 +46,24 @@ function Profile() {
     if(image){
       formData.append('image', image)
     }
+
+    await Object.keys(user).forEach((key) => formData.append(key, user[key]))
+
+    const data = await api.patch(`/users/edit/${user.id}`, formData, {
+      headers: {
+        Authorization: `Bearer ${JSON.parse(token)}`,
+        'Content-Type': 'multipart/form-data'
+      }
+    })
+      .then((response) => {
+        return response.data
+      })
+      .catch((err) => {
+        alert(err.response.data)
+        return err.response.data
+      })
+    alert(data.message)
   }
-
-  await Object.keys(user).forEach((key) => formData.append(key, user[key]))
-
-  const data = await api.patch(`/users/edit/${user.id}`, formData, {
-    headers: {
-      Authorization: `Bearer ${JSON.parse(token)}`,
-      'Content-Type': 'multipart/form-data'
-    }
-  })
-    .then((response) => {
-      return response.data
-    })
-    .catch((err) => {
-      alert(data.message)
-      return err.response.message
-    })
-  alert(data.message)
 
   return (
     <div className='container'>
@@ -70,9 +71,56 @@ function Profile() {
       <img
         style={{ height: '200px', width: '200px' }}
         className='rounded-circle m-3'
-        src={api + '/images/users/' + user.image}
+        src={'http://localhost:5000/images/users/' + user.image}
         alt='Foto de perfil'
       />
+      <form onSubmit={handleSubmit}>
+        <InputGroup
+          label='Imagem'
+          type='file'
+          name='image'
+          handleChange={onFileChange}
+        />
+        <InputGroup
+          label='Nome'
+          type='text'
+          name='name'
+          placeholder={'Digite seu nome'}
+          handleChange={handleChange}
+          value={user.name}
+        />
+        <InputGroup
+          label='E-mail'
+          type='email'
+          name='email'
+          placeholder={'Digite seu e-maill'}
+          handleChange={handleChange}
+          value={user.email}
+        />
+        <InputGroup
+          label='Telefone'
+          type='tel'
+          name='phone'
+          placeholder={'Digite seu telefone'}
+          handleChange={handleChange}
+          value={user.phone}
+        />
+        <InputGroup
+          label='Senha'
+          type='password'
+          placeholder={'Digite sua senha'}
+          name='password'
+          handleChange={handleChange}
+        />
+        <InputGroup
+          label='Conirme a senha'
+          type='password'
+          placeholder={'Confirme a senha'}
+          name='confirmpassword'
+          handleChange={handleChange}
+        />
+        <button className='btn btn-primary' type='submit'>Salvar</button>
+      </form>
     </div>
   )
 }
