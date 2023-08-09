@@ -37,7 +37,6 @@ module.exports = class PetController{
         const token = getToken(req)
         const decoded = jwt.verify(token, 'nossosecret')
         currentUser = await User.findByPk(decoded.id)
-        console.log('currentuser: ', currentUser.id)
 
         //criando um novo pet
         const pet = new Pet({
@@ -50,15 +49,28 @@ module.exports = class PetController{
         })
 
         try {
-            const newPet = await pet.save()
-            res.status(201).json({ message: 'Pet cadastrado com sucesso ', newPet })
+            // Save the pet to the database
+            const newPet = await pet.save();
+
+            // Handle image uploads
+            const images = req.files;
+            if (images && images.length > 0) {
+                // Save each image to the ImagePet table
+                for (let i = 0; i < images.length; i++) {
+                    const filename = images[i].filename;
+                    const newImagePet = new ImagePet({ image: filename, PetId: newPet.id });
+                    await newImagePet.save();
+                }
+            }
+
+            res.status(201).json({ message: 'Pet cadastrado com sucesso', newPet });
         } catch (error) {
-            res.status(500).json({ message: error })
+            res.status(500).json({ message: error });
         }
     }
 
     static async getAll(req, res){
-        const pets = await Pet.findAll({ order: [['createdAt', 'DESC']] })
+        const pets = await Pet.findAll({ order: [['createdAt', 'DESC']], include: ImagePet })
         res.status(200).json({ pets: pets })
     }
 
@@ -135,7 +147,7 @@ module.exports = class PetController{
         const id = req.params.id
         const { name, age, weight, color } = req.body
 
-        const updatedPet = {}
+        const updateData = {}
         const pet = await Pet.findByPk(id)
 
         if(!pet){
@@ -158,28 +170,28 @@ module.exports = class PetController{
             res.status(422).json({ message: 'O nome é obrigatório' })
             return
         } else{
-            updatedPet.name = name
+            updateData.name = name
         }
 
         if(!age){
             res.status(422).json({ message: 'A idade é obrigatória' })
             return
         } else{
-            updatedPet.age = age
+            updateData.age = age
         }
 
         if(!weight){
             res.status(422).json({ message: 'O peso é obrigatório' })
             return
         } else{
-            updatedPet.weight = weight
+            updateData.weight = weight
         }
 
         if(!color){
             res.status(422).json({ message: 'A cor é obrigatória' })
             return
         } else{
-            updatedPet.color = color
+            updateData.color = color
         }
 
         //trabalhar com as imagens
@@ -278,7 +290,7 @@ module.exports = class PetController{
         const id = req.params.id
         const { name, age, weight, color } = req.body
 
-        const updatedPet = {}
+        const updateData = {}
         const pet = await Pet.findByPk(id)
 
         if (!pet) {
@@ -301,25 +313,25 @@ module.exports = class PetController{
             res.status(422).json({ message: 'O nome é obrigatório' })
             return
         } else {
-            updatedPet.name = name
+            updateData.name = name
         }
         if (!age) {
             res.status(422).json({ message: 'O age é obrigatório' })
             return
         } else {
-            updatedPet.age = age
+            updateData.age = age
         }
         if (!weight) {
             res.status(422).json({ message: 'O weight é obrigatório' })
             return
         } else {
-            updatedPet.weight = weight
+            updateData.weight = weight
         }
         if (!color) {
             res.status(422).json({ message: 'O color é obrigatório' })
             return
         } else {
-            updatedPet.color = color
+            updateData.color = color
         }
 
         //trabalhar com as imagens
@@ -339,7 +351,7 @@ module.exports = class PetController{
             await newImagePet.save()
         }
 
-        await Pet.update(updatedPet, { where: { id: id } })
+        await Pet.update(updateData, { where: { id: id } })
         res.status(200).json({ message: 'Pet atualizado com sucesso' })
     }
 

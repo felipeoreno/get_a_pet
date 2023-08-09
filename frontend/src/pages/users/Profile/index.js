@@ -20,14 +20,13 @@ function Profile() {
         }
       })
         .then((response) => {
-          // alert('response.data: ' + JSON.stringify(response.data))
           setUser(response.data)
         })
     }
   }, [token, navigate])
 
   function handleChange(e){
-    setUser({ ...user, [e.target.name]: e.target.name })
+    setUser({ ...user, [e.target.name]: e.target.value })
   }
 
   //alterando estado da imagem
@@ -48,7 +47,9 @@ function Profile() {
     }
 
     await Object.keys(user).forEach((key) => formData.append(key, user[key]))
-
+    for (const value of formData.values()) {
+      console.log(value);
+    }
     const data = await api.patch(`/users/edit/${user.id}`, formData, {
       headers: {
         Authorization: `Bearer ${JSON.parse(token)}`,
@@ -59,7 +60,6 @@ function Profile() {
         return response.data
       })
       .catch((err) => {
-        alert(err.response.data)
         return err.response.data
       })
     alert(data.message)
@@ -113,7 +113,7 @@ function Profile() {
           handleChange={handleChange}
         />
         <InputGroup
-          label='Conirme a senha'
+          label='Confirme a senha'
           type='password'
           placeholder={'Confirme a senha'}
           name='confirmpassword'
