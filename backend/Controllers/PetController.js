@@ -83,7 +83,7 @@ module.exports = class PetController{
         currentUser.password = undefined
         const currentUserId = currentUser.id //pegamos o ID do user logado
 
-        const pets = await Pet.findAll({ where: { UserId: currentUserId }, order: [['createdAt', 'DESC']] })
+        const pets = await Pet.findAll({ where: { UserId: currentUserId }, order: [['createdAt', 'DESC']], include: ImagePet })
 
         res.status(200).json({ pets })
     }
@@ -97,7 +97,7 @@ module.exports = class PetController{
             return
         }
 
-        const pet = await Pet.findByPk(id)
+        const pet = await Pet.findByPk(id, { include: ImagePet })
 
         if(!pet){
             res.status(422).json({ message: 'Pet não existe' })
@@ -281,7 +281,8 @@ module.exports = class PetController{
     
         const pets = await Pet.findAll({
             where: {adopter: currentUser.id},
-            order: [['createdAt', 'DESC']]
+            order: [['createdAt', 'DESC']],
+            include: [{ model: User, attributes: ['name', 'phone'] }, ImagePet]
         })
         res.status(200).json({ pets })
     }
